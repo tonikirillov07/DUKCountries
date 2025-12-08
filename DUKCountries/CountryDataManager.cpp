@@ -10,7 +10,7 @@
 
 using namespace cliext;
 
-inline std::wstring utf8_to_wstring(const std::string& str);
+std::wstring stringToWString(const std::string& str);
 int findCountryIndex(size_t dataSize);
 
 std::vector<int> generatedIndecies;
@@ -18,21 +18,18 @@ std::vector<int> generatedIndecies;
 CountryData^ CountryDataManager::getRandomCountryFromFile(const char* filename) {
 	nlohmann::json data = JSONReader::readJSON(filename);
 	if (data == nullptr)
-		return gcnew CountryData();
+		throw new runtime_error("Failed to read data from file");
 
 	int randomIndex = findCountryIndex(data.size());
+	auto item = data[randomIndex];
 
-	auto& item = data[randomIndex];
-
-	std::wstring countryStr = utf8_to_wstring(item["country"].get<std::string>());
-	std::wstring capitalStr = utf8_to_wstring(item["capital"].get<std::string>());
+	std::wstring countryStr = stringToWString(item["country"].get<std::string>());
+	std::wstring capitalStr = stringToWString(item["capital"].get<std::string>());
 
 	System::String^ country = gcnew System::String(countryStr.c_str());
 	System::String^ capital = gcnew System::String(capitalStr.c_str());
 
-	CountryData^ info = gcnew CountryData(
-		country,
-		capital);
+	CountryData^ info = gcnew CountryData(country, capital);
 
 	generatedIndecies.push_back(randomIndex);
 
@@ -63,7 +60,7 @@ int findCountryIndex(size_t dataSize) {
 	return randomIndex;
 }
 
-inline std::wstring utf8_to_wstring(const std::string& str)
+std::wstring stringToWString(const std::string& str)
 {
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	return converter.from_bytes(str);

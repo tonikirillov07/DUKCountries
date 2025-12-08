@@ -9,7 +9,5 @@ class CountryDataManager
 {
 public:
 	CountryData^ getRandomCountryFromFile(const char* filename);
-private:
-	nlohmann::json readData(const char* filename);
 };
 

@@ -7,6 +7,7 @@ json JSONReader::readJSON(const char* filename) {
     std::ifstream inputStream(filename);
     if (!inputStream.is_open()) {
         auto managedFilename = msclr::interop::marshal_as<System::String^>(filename);
+
         System::Windows::Forms::MessageBox::Show(
             "Cannot open file: " + managedFilename,
             "Error",

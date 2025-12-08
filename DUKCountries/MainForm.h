@@ -3,6 +3,7 @@
 #include "TestForm.h"
 #include "StatisticForm.h"
 #include "iostream"
+#include "StatisticReader.h"
 
 namespace DUKCountries {
 
@@ -23,9 +24,6 @@ namespace DUKCountries {
 		MainForm(void)
 		{
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
-			//
 		}
 
 	protected:
@@ -44,19 +42,8 @@ namespace DUKCountries {
 	private: System::Windows::Forms::Label^ labelTitle;
 	private: System::Windows::Forms::PictureBox^ pictureBox1;
 	private: System::Windows::Forms::PictureBox^ pictureBox2;
-	private: System::Windows::Forms::Label^ labelQuote;
-
-
-
-	protected:
-
-	protected:
-
-	private:
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		System::ComponentModel::Container ^components;
+	private: System::ComponentModel::Container ^components;
+	private: StatisticReader statisticReader;
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -71,7 +58,6 @@ namespace DUKCountries {
 			this->labelTitle = (gcnew System::Windows::Forms::Label());
 			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			this->pictureBox2 = (gcnew System::Windows::Forms::PictureBox());
-			this->labelQuote = (gcnew System::Windows::Forms::Label());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox2))->BeginInit();
 			this->SuspendLayout();
@@ -148,22 +134,6 @@ namespace DUKCountries {
 			this->pictureBox2->TabIndex = 4;
 			this->pictureBox2->TabStop = false;
 			// 
-			// labelQuote
-			// 
-			this->labelQuote->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->labelQuote->BackColor = System::Drawing::Color::Transparent;
-			this->labelQuote->Font = (gcnew System::Drawing::Font(L"Arial", 15, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->labelQuote->ForeColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(81)), static_cast<System::Int32>(static_cast<System::Byte>(81)),
-				static_cast<System::Int32>(static_cast<System::Byte>(81)));
-			this->labelQuote->Location = System::Drawing::Point(641, 815);
-			this->labelQuote->Name = L"labelQuote";
-			this->labelQuote->Size = System::Drawing::Size(80, 28);
-			this->labelQuote->TabIndex = 5;
-			this->labelQuote->Text = L"label1";
-			this->labelQuote->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
-			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
@@ -171,7 +141,6 @@ namespace DUKCountries {
 			this->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(232)), static_cast<System::Int32>(static_cast<System::Byte>(232)),
 				static_cast<System::Int32>(static_cast<System::Byte>(232)));
 			this->ClientSize = System::Drawing::Size(1319, 855);
-			this->Controls->Add(this->labelQuote);
 			this->Controls->Add(this->pictureBox2);
 			this->Controls->Add(this->pictureBox1);
 			this->Controls->Add(this->labelTitle);
@@ -195,6 +164,16 @@ private: System::Void buttonStart_Click(System::Object^ sender, System::EventArg
 	testForm->Show();
 }
 private: System::Void buttonStatistics_Click(System::Object^ sender, System::EventArgs^ e) {
+	if (!statisticReader.hasStatistics("statistic.json")) {
+		System::Windows::Forms::MessageBox::Show(
+			"Вы не прошли еще ни одного теста",
+			"Error",
+			System::Windows::Forms::MessageBoxButtons::OK,
+			System::Windows::Forms::MessageBoxIcon::Error);
+
+		return;
+	}
+
 	StatisticForm^ statisticForm = gcnew StatisticForm(this);
 
 	this->Hide();

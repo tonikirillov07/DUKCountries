@@ -40,15 +40,9 @@ namespace DUKCountries {
 			this->previousForm = previousForm;
 
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
-			//
 		}
 
 	protected:
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
 		~TestForm()
 		{
 			if (components)
@@ -82,16 +76,9 @@ namespace DUKCountries {
 
 
 	private:
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
 		System::ComponentModel::Container ^components;
 
 #pragma region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
 		void InitializeComponent(void)
 		{
 			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(TestForm::typeid));
@@ -432,7 +419,6 @@ private: System::Void gotoNextQuestion(int step) {
 		return;
 	}
 		
-
 	currentQuestionIndex += step;
 
 	if (currentQuestionIndex >= questions->size()) {
@@ -487,7 +473,6 @@ private: System::Void displayQuestion(int index) {
 		CountryData^ correctAnswer = answers[question->correctAnswer];
 
 		int correctAnswerIndex = getRadioButtonIndexInGroupBoxByText(correctAnswer->capital);
-		
 		if (correctAnswerIndex == -1)
 			throw std::runtime_error(StringUtils::convertSystemStringToChars("Failed to find radio button by text: " + correctAnswer->capital));
 
@@ -508,14 +493,13 @@ private: System::Void displayResult() {
 	else if (mark > 5)
 		mark = 5;
 
-	this->labelMark = (gcnew System::Windows::Forms::Label());
+	this->labelMark = gcnew System::Windows::Forms::Label();
 	this->labelMark->AutoSize = true;
 	this->labelMark->Font = (gcnew System::Drawing::Font(L"Arial", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 		static_cast<System::Byte>(0)));
 	this->labelMark->Location = System::Drawing::Point(-1, 20);
 	this->labelMark->Name = L"labelMark";
 	this->labelMark->Size = System::Drawing::Size(153, 23);
-	this->labelMark->TabIndex = 17;
 	this->labelMark->Text = L"Ваша оценка: " + mark;
 
 	groupBox->Controls->Add(this->labelMark);

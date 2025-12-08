@@ -18,12 +18,14 @@ public:
     Question(Question^ question) {
         this->answers = question->answers;
         this->correctAnswer = question->correctAnswer;
+        this->selectedAnswer = question->selectedAnswer;
     }
 
     Question() {}
 
     ~Question() {
-        answers->Clear(answers, 0, answers->Length);
+        if (answers && answers->Length != 0)
+            answers->Clear(answers, 0, answers->Length);
     }
 };
 

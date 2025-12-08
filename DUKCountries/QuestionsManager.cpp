@@ -9,6 +9,7 @@
 cliext::vector<Question^>^ QuestionsManager::getQuestionsList(int count, const char* dataFile) {
 	std::random_device rd;       
 	std::mt19937 randomFunction(rd());
+	std::uniform_int_distribution<> dist(0, 2);
 
 	cliext::vector<Question^>^ questions = gcnew cliext::vector<Question^>();
 
@@ -20,7 +21,6 @@ cliext::vector<Question^>^ QuestionsManager::getQuestionsList(int count, const c
 	CountryDataManager countryDataManager;
 
 	int mainCountryDataIndex;
-	std::uniform_int_distribution<> dist(0, 2);
 
 	for (int i = 0; i < count; i++) {
 		countryInfo1 = countryDataManager.getRandomCountryFromFile(dataFile);

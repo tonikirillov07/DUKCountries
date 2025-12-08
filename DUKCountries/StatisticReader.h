@@ -9,5 +9,6 @@ ref class StatisticReader
 {
 public:
 	cliext::vector<MarkInfo^>^ readAllMarksInfosFromFile(const char* filename);
+	bool StatisticReader::hasStatistics(const char* filename);
 };
 

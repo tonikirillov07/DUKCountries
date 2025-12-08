@@ -8,7 +8,7 @@
 
 using json = nlohmann::json;
 
-void writeJsonFile(const std::string& filename, const json& jsonFile);
+void writeJsonFile(const char* filename, json jsonFile);
 
 void StatisticWriter::addNewResultsData(const char* date, int mark, const char* filename) {
     json data = json(JSONReader::readJSON(filename));
@@ -17,7 +17,7 @@ void StatisticWriter::addNewResultsData(const char* date, int mark, const char* 
         {"mark", mark}
     };
 
-    data.emplace_back(newMark);
+    data.push_back(newMark);
 
     writeJsonFile(filename, data);
 }
@@ -29,7 +29,7 @@ void StatisticWriter::clearStatistics(const char* filename) {
     writeJsonFile(filename, data);
 }
 
-void writeJsonFile(const std::string& filename, const json& jsonFile) {
+void writeJsonFile(const char* filename, json jsonFile) {
     std::ofstream outputStream(filename);
     if (!outputStream.is_open()) {
         auto managedFilename = msclr::interop::marshal_as<System::String^>(filename);

@@ -1,4 +1,7 @@
 #pragma once
+#include <vector>
+#include <string>
+
 ref class MarkInfo
 {
 private:
@@ -19,6 +22,10 @@ public:
 	MarkInfo() {}
 
 	System::String^ getDate();
+	std::vector<std::string> getSplitDate();
 	int getMark();
+	int getMonth();
+	int getDay();
+	int getYear();
 };
 
