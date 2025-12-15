@@ -6,24 +6,24 @@ ref class MarkInfo
 {
 private:
 	System::String^ date;
-	int mark;
+	int rightAnswers;
 
 public:
 	MarkInfo(System::String^ date, int mark) {
 		this->date = date;
-		this->mark = mark;
+		this->rightAnswers = mark;
 	}
 
 	MarkInfo(MarkInfo^ markInfo) {
 		this->date = markInfo->date;
-		this->mark = markInfo->mark;
+		this->rightAnswers = markInfo->rightAnswers;
 	}
 
 	MarkInfo() {}
 
 	System::String^ getDate();
 	std::vector<std::string> getSplitDate();
-	int getMark();
+	int getRightAnswers();
 	int getMonth();
 	int getDay();
 	int getYear();

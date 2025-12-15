@@ -10,18 +10,25 @@ using json = nlohmann::json;
 
 void writeJsonFile(const char* filename, json jsonFile);
 
-void StatisticWriter::addNewResultsData(const char* date, int mark, const char* filename) {
+/*
+* Добавляет новые данные об оценке в файл статистики по пути filename
+*/
+void StatisticWriter::addNewResultsData(const char* date, int rightAnswers, const char* filename) {
     json data = json(JSONReader::readJSON(filename));
-    json newMark = {
+    
+    //Создание нового объекта статистики и добавление его к остальным объектам
+    json newStatisticObject = {
         {"date", date},
-        {"mark", mark}
+        {"rightAnswers", rightAnswers}
     };
 
-    data.push_back(newMark);
+    data.push_back(newStatisticObject);
 
+    //Перезаписываем файл статистики
     writeJsonFile(filename, data);
 }
 
+//Очищает файл со статистикой
 void StatisticWriter::clearStatistics(const char* filename) {
     json data = json(JSONReader::readJSON(filename));
     data.clear();
@@ -29,8 +36,12 @@ void StatisticWriter::clearStatistics(const char* filename) {
     writeJsonFile(filename, data);
 }
 
+//Перезаписывает файл со статистикой
 void writeJsonFile(const char* filename, json jsonFile) {
+    //Создание объекта ofstream для записи
     std::ofstream outputStream(filename);
+
+    //Показываем окно с ошибкой, если не удалось открыть файл filename для записи
     if (!outputStream.is_open()) {
         auto managedFilename = msclr::interop::marshal_as<System::String^>(filename);
         System::Windows::Forms::MessageBox::Show(
@@ -41,7 +52,9 @@ void writeJsonFile(const char* filename, json jsonFile) {
         return;
     }
 
+    //Запись в файл при помощи потока вывода
     outputStream << std::setw(4) << jsonFile << std::endl;
 
+    //Закрытие outputStream
     outputStream.close();
 }

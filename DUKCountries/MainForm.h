@@ -3,6 +3,7 @@
 #include "TestForm.h"
 #include "StatisticForm.h"
 #include "iostream"
+#include "JSONReader.h"
 #include "StatisticReader.h"
 
 namespace DUKCountries {
@@ -157,13 +158,28 @@ namespace DUKCountries {
 
 		}
 #pragma endregion
+
+/*
+Открывает окно с тестами при нажатии на кнопку buttonStart
+*/
 private: System::Void buttonStart_Click(System::Object^ sender, System::EventArgs^ e) {
 	TestForm^ testForm = gcnew TestForm(this);
 	
+	//Скрываем текущее окно и показываем окно с тестами
 	this->Hide();
 	testForm->Show();
 }
+
+/*
+Открывает окно со статистикой при нажатии на кнопку buttonStatistics
+*/
 private: System::Void buttonStatistics_Click(System::Object^ sender, System::EventArgs^ e) {
+	const char* filename = "statistic.json";
+
+	if (JSONReader::readJSON(filename) == nullptr)
+		return;
+
+	//Показываем окно с ошибкой, если статистика пуста
 	if (!statisticReader.hasStatistics("statistic.json")) {
 		System::Windows::Forms::MessageBox::Show(
 			"Вы не прошли еще ни одного теста",
@@ -176,9 +192,14 @@ private: System::Void buttonStatistics_Click(System::Object^ sender, System::Eve
 
 	StatisticForm^ statisticForm = gcnew StatisticForm(this);
 
+	//Скрываем текущее окно и показываем окно со статистикой
 	this->Hide();
 	statisticForm->Show();
 }
+
+/*
+Выходим из программы при закрытии окна
+*/
 private: System::Void MainForm_FormClosed(System::Object^ sender, System::Windows::Forms::FormClosedEventArgs^ e) {
 	exit(0);
 }

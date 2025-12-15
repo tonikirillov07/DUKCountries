@@ -352,11 +352,19 @@ namespace DUKCountries {
 		}
 #pragma endregion
 
+/*
+Открытие предыдущей формы по нажатию на кнопку buttonBack
+*/
 private: System::Void buttonBack_Click(System::Object^ sender, System::EventArgs^ e) {
 	this->Hide();
 	previousForm->Show();
 }
+
+/*
+Проверка ответа по нажатию на кнопку buttonContinue
+*/
 private: System::Void buttonNext_Click_Check(System::Object^ sender, System::EventArgs^ e) {
+	//Показ ошибки, если пользователь не выбрал ни один вариант ответа
 	RadioButton^ selectedRadioButton = getSelectedRadioButtonInGroupBox();
 	if (selectedRadioButton == nullptr) {
 		System::Windows::Forms::MessageBox::Show(
@@ -372,18 +380,25 @@ private: System::Void buttonNext_Click_Check(System::Object^ sender, System::Eve
 	cli::array<CountryData^>^ answers = question->answers;
 	CountryData^ correctAnswer = answers[question->correctAnswer];
 
+	//Получение индекса верного ответа из correctAnswer
 	int correctAnswerIndex = getRadioButtonIndexInGroupBoxByText(correctAnswer->capital);
+
+	//Получение индекса выбранного варианта ответа
 	int selectedAnswer = getSelectedRadioButtonIndexInGroupBox();
 
+	//Задаем данному вопросу индекс выбранного ответа, помечая его как "уже решенный"
 	question->setSelectedAnswer(selectedAnswer);
 
+	//Увеличиваем счетчик верных ответов, если столицы верного ответа и выбранного ответа совпадают
 	if (correctAnswer->capital->Equals(selectedRadioButton->Text)) 
 		correctAnswers++;
 
+	//Помечаем верный вариант ответа
 	markRightAnswer(correctAnswerIndex);
 
 	this->buttonContinue->Text = L"Далее";
 
+	//Задаем кнопке buttonContinue действие buttonNext_Click_Next
 	clearButtonClickEvents(buttonContinue);
 	this->buttonContinue->Click += gcnew System::EventHandler(this, &TestForm::buttonNext_Click_Next);
 }
@@ -400,37 +415,64 @@ private: System::Void TestForm_Load(System::Object^ sender, System::EventArgs^ e
 	prepareQuestions();
 }
 
+/*
+* Генерирует начальный список из 20 вопросов и отображает их
+*/
 private: System::Void prepareQuestions() {
+	//Список вопросов не пустой? Очищаем его
 	if (questions && !questions->empty())
 		questions->clear();
 
 	const char* filename = "data.json";
 	questionsManager = gcnew QuestionsManager();
 
+	//Получаем список вопросов
 	questions = gcnew cliext::vector<Question^>(questionsManager->getQuestionsList(20, filename));
 	currentQuestionIndex = 0;
 
 	displayQuestion(currentQuestionIndex);
 }
 
+/*
+Переход к другому вопросу через определенный step шагов
+*/
 private: System::Void gotoNextQuestion(int step) {
+	//Ни один вариант ответа не выбран, но при этом нужно открыть следующий вопрос? Показываем ошибку
 	if ((!isAnyRadioButtonInGroupBoxSelected()) && (questions[currentQuestionIndex]->selectedAnswer == -1) && (step > 0)) {
 		cerr << "No radio button selected" << endl;
 		return;
 	}
-		
+	
+	//Увеличиваем индекс текущего вопроса на step
 	currentQuestionIndex += step;
 
-	if (currentQuestionIndex >= questions->size()) {
+	//Прошли финальный вопрос и ответили на все вопросы? Отображаем результат
+	if ((currentQuestionIndex >= questions->size())) {
+		//Не ответили на все вопросы? Показываем ошибку
+		if (!hasAnswerForAllQuestions()) {
+			System::Windows::Forms::MessageBox::Show(
+				L"Ответьте на все вопросы",
+				"Error",
+				System::Windows::Forms::MessageBoxButtons::OK,
+				System::Windows::Forms::MessageBoxIcon::Error);
+
+			return;
+		}
+
 		displayResult();
 		return;
 	}
-		
+	
+	//Текущий индекс вопроса после увеличения стал отрицательным? Задаем индекс финального вопроса
 	if (currentQuestionIndex < 0)
 		currentQuestionIndex = questions->size() - 1;
 
 	Question^ question = questions[currentQuestionIndex];
 
+	/*
+	* Ответили на данный вопрос ? Задаем кнопке текст buttonContinue "Далее" и действие buttonNext_Click_Next.
+	* Если нет, задаем кнопке текст buttonContinue "Проверить" и действие buttonNext_Click_Check
+	*/
 	if (question->selectedAnswer != -1) {
 		this->buttonContinue->Text = L"Далее";
 
@@ -447,52 +489,69 @@ private: System::Void gotoNextQuestion(int step) {
 	displayQuestion(currentQuestionIndex);
 }
 
+/*
+* Отображает вопрос по индексу
+*/
 private: System::Void displayQuestion(int index) {
+	//Берем вопрос по индексу и его 3 варианта ответов
 	Question^ question = questions[index];
 
 	CountryData^ countryInfo1 = question->answers[0];
 	CountryData^ countryInfo2 = question->answers[1];
 	CountryData^ countryInfo3 = question->answers[2];
 
+	//Задаем labelQuestion текст вопроса
 	this->labelQuestion->Text = L"Выберете столицу страны: " + question->answers[question->correctAnswer]->country;
 
+	//Задаем всем 3 радиокнопкам текст вариантов ответов
 	this->radioButtonFirst->Text = countryInfo1->capital;
 	this->radioButtonSecond->Text = countryInfo2->capital;
 	this->radioButtonThree->Text = countryInfo3->capital;
 
+	//Снимаем выделение со всех радиокнопок
 	this->radioButtonFirst->Checked = false;
 	this->radioButtonSecond->Checked = false;
 	this->radioButtonThree->Checked = false;
 
+	//Задаем labelQuestionNumber текст с номером текущего вопроса
 	labelQuestionNumber->Text = (currentQuestionIndex + 1) + " / " + questions->size();
 
+	//Не ответили на текущий вопрос? Задаем все радиокнопкам обычный стиль
 	if (question->selectedAnswer == -1)
 		markAllAnswersDefault();
 	else {
 		cli::array<CountryData^>^ answers = question->answers;
 		CountryData^ correctAnswer = answers[question->correctAnswer];
 
+		//Находим радиокнопку с верным вариантом ответа, если не нашли - кидаем исключение
 		int correctAnswerIndex = getRadioButtonIndexInGroupBoxByText(correctAnswer->capital);
 		if (correctAnswerIndex == -1)
 			throw std::runtime_error(StringUtils::convertSystemStringToChars("Failed to find radio button by text: " + correctAnswer->capital));
 
 		markRightAnswer(correctAnswerIndex);
 
+		//Задаем кнопке buttonContinue действие buttonNext_Click_Next
 		clearButtonClickEvents(buttonContinue);
 		this->buttonContinue->Click += gcnew System::EventHandler(this, &TestForm::buttonNext_Click_Next);
 	}
 }
 
+/*
+Отображает результат теста
+*/
 private: System::Void displayResult() {
+	//Удаляем все радиокнопки и скрываем кнопку предыдущего вопроса
 	groupBox->Controls->Clear();
 	buttonPreviousQuestion->Hide();
 
+	//Рассчет оценки
 	int mark = (correctAnswers * 5) / questions->size();
 	if (mark < 2)
 		mark = 2;
 	else if (mark > 5)
 		mark = 5;
 
+	//Создание и добавление в groupBox надписи с оценкой
 	this->labelMark = gcnew System::Windows::Forms::Label();
 	this->labelMark->AutoSize = true;
 	this->labelMark->Font = (gcnew System::Drawing::Font(L"Arial", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
@@ -507,18 +566,25 @@ private: System::Void displayResult() {
 	labelQuestion->Text = L"Вы ответили правильно на " + correctAnswers + L" из " + questions->size();
 	buttonContinue->Text = L"Попробовать заново";
 
+	//Задаем кнопке buttonContinue действие tryAgain
 	clearButtonClickEvents(buttonContinue);
 	this->buttonContinue->Click += gcnew System::EventHandler(this, &TestForm::tryAgain);
 
+	//Получение текущей даты в отформатированном виде
 	time_t timestamp = time(NULL);
 	struct tm datetime = *localtime(&timestamp);
 
 	char output[16];
 	strftime(output, sizeof(output), "%m/%d/%Y", &datetime);
 
-	statisticWriter.addNewResultsData(output, mark, "statistic.json");
+	//Запись новой оценки в статистику
+	statisticWriter.addNewResultsData(output, correctAnswers, "statistic.json");
 }
 
+/*
+* Генерирует новый список вопросов, добавляет радиокнопки в groupBox,
+* показывает buttonPreviousQuestion, добавляет действие на buttonContinue buttonNext_Click_Check
+*/
 private: System::Void tryAgain(System::Object^ sender, System::EventArgs^ e) {
 	groupBox->Controls->Clear();
 	buttonPreviousQuestion->Show();
@@ -527,21 +593,32 @@ private: System::Void tryAgain(System::Object^ sender, System::EventArgs^ e) {
 	this->groupBox->Controls->Add(this->radioButtonSecond);
 	this->groupBox->Controls->Add(this->radioButtonFirst);
 
+	correctAnswers = 0;
+	buttonContinue->Text = L"Проверить";
+
 	clearButtonClickEvents(buttonContinue);
 	this->buttonContinue->Click += gcnew System::EventHandler(this, &TestForm::buttonNext_Click_Check);
 
 	prepareQuestions();
 }
 
+/*
+* Помечает верный вариант ответа зеленым, остальные - красным
+*/
 private: System::Void markRightAnswer(int index) {
 	for (int i = 0; i < groupBox->Controls->Count; i++) {
+		//Получаем элемент из groupBox и преобразуем его в RadioButton
 		Control^ currentControl = groupBox->Controls[i];
 		RadioButton^ radioButton = dynamic_cast<RadioButton^>(currentControl);
 
+		//Задаем цвет текущей радиокнопке
 		radioButton->ForeColor = i == index ? System::Drawing::Color::Green : System::Drawing::Color::Red;
 	}
 }
 
+/*
+* Задает всем радиокнопкам стандартный стиль : черный цвет и снятие выделения
+*/
 private: System::Void markAllAnswersDefault() {
 	for (int i = 0; i < groupBox->Controls->Count; i++) {
 		Control^ currentControl = groupBox->Controls[i];
@@ -552,19 +629,32 @@ private: System::Void markAllAnswersDefault() {
 	}
 }
 
+/*
+* Удаляет с кнопки реакции на нажатие через рефлексию
+*/
 private: System::Void clearButtonClickEvents(Button^ button) {
+	// Получение закрытого статического поля EventClick класса Control
 	FieldInfo^ eventClickField = Control::typeid->GetField("EventClick",
 		static_cast<BindingFlags>(BindingFlags::Static |
 			BindingFlags::NonPublic));
 
+	// Чтение значения поля EventClick для заданной кнопки
 	Object^ fieldValue = eventClickField->GetValue(button);
+
+	// Доступ к приватному свойству Events объекта-кнопки
 	PropertyInfo^ propertyInfo = button->GetType()->GetProperty("Events",
 		BindingFlags::NonPublic | BindingFlags::Instance);
 
+	// Преобразование значения свойства Events к списку обработчиков событий
 	EventHandlerList^ handlers = dynamic_cast<EventHandlerList^>(propertyInfo->GetValue(button, nullptr));
+
+	// Удаляем обработчик события по найденному ключу
 	handlers->RemoveHandler(fieldValue, handlers[fieldValue]);
 }
 
+/*
+* Находит в groupBox радиокнопку и возвращает ту, на которой стоит выделение
+*/
 private: RadioButton^ getSelectedRadioButtonInGroupBox() {
 	for (int i = 0; i < groupBox->Controls->Count; i++) {
 		Control^ currentControl = groupBox->Controls[i];
@@ -578,6 +668,9 @@ private: RadioButton^ getSelectedRadioButtonInGroupBox() {
 	return nullptr;
 }
 
+/*
+Находит и возвращает индекс радиокнопки по переданному тексту
+*/
 private: int getRadioButtonIndexInGroupBoxByText(System::String^ text) {
 	for (int i = 0; i < groupBox->Controls->Count; i++) {
 		Control^ currentControl = groupBox->Controls[i];
@@ -588,9 +681,13 @@ private: int getRadioButtonIndexInGroupBoxByText(System::String^ text) {
 		}
 	}
 
+	//Возвращаем -1, если не удалось найти радиокноку по переданному тексту
 	return -1;
 }
 
+/*
+То же, что и getSelectedRadioButtonInGroupBox(), но возвращает индекс радиокнопки
+*/
 private: int getSelectedRadioButtonIndexInGroupBox() {
 	for (int i = 0; i < groupBox->Controls->Count; i++) {
 		Control^ currentControl = groupBox->Controls[i];
@@ -604,6 +701,25 @@ private: int getSelectedRadioButtonIndexInGroupBox() {
 	return -1;
 }
 
+/*
+* Возвращает true, если пользователь дал ответы на все вопросы из списка, если нет - false
+*/
+private: bool hasAnswerForAllQuestions() {
+	Question^ currentQuestion;
+	for (int i = 0; i < questions->size(); i++) {
+		currentQuestion = questions->at(i);
+
+		//Нет ответа на данный вопрос? Возвращаем false
+		if (currentQuestion->selectedAnswer == -1)
+			return false;
+	}
+
+	return true;
+}
+
+/*
+Возвращает true, если выбран хоть какой-то вариант ответа
+*/
 private: bool isAnyRadioButtonInGroupBoxSelected() {
 	return getSelectedRadioButtonInGroupBox() != nullptr;
 }

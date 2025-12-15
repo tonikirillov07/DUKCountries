@@ -7,8 +7,8 @@ System::String^ MarkInfo::getDate() {
 	return this->date;
 }
 
-int MarkInfo::getMark() {
-	return this->mark;
+int MarkInfo::getRightAnswers() {
+	return this->rightAnswers;
 }
 
 std::vector<std::string> MarkInfo::getSplitDate() {
